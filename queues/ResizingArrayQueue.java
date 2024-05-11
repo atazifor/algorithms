@@ -43,22 +43,16 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
         Item item = q[front++];
         if (front == q.length) front = 0;
         size--;
+        if (size > 0 && size == q.length / 4) {
+            resize(q.length / 2);
+        }
         return item;
     }
 
     private void resize(int capacity) {
         Item[] copy = (Item[]) new Object[capacity];
-        int i = 0;
-        if (front <= rear) {
-            for (int j = front; j <= rear; j++)
-                copy[i++] = q[j];
-        }
-        else {
-            for (int j = front; j < q.length; j++)
-                copy[i++] = q[j];
-            int remainingItems = size - i;
-            for (int j = 0; j < remainingItems; j++)
-                copy[i++] = q[j];
+        for (int i = 0; i < size; i++) {
+            copy[i] = q[(front + i) % q.length];
         }
         q = copy;
         front = 0;
