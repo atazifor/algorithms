@@ -75,6 +75,15 @@ public class Percolation {
     }
 
     // is the site (row, col) full?
+
+    /**
+     * site must be open
+     * if site is not bottom, there must be a path from top to site, that does not go through bottom
+     *
+     * @param row
+     * @param col
+     * @return
+     */
     public boolean isFull(int row, int col) {
         int n = grid.length;
         if (row < 1 || col < 1 || row > n || col > n)
@@ -82,6 +91,13 @@ public class Percolation {
         // int q = n * (row - 1) + (col - 1) + 1;
         int q = to1D(n, row, col) + 1;
         // open and virtual top is connected to object
+        if (row - 1 < n - 1 || col - 1 < n - 1) { // not the last row
+            boolean[] temp = new boolean[n];
+            for (int i = 0; i < n; i++) {
+                temp[i] = grid[n - 1][i];
+                grid[n - 1][i] = false;
+            }
+        }
         return isOpen(row, col) && uf.find(0) == uf.find(q);
     }
 
