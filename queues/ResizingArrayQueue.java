@@ -13,6 +13,12 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
     public int rear;  // Index of next element to insert
     int size;
 
+    private static int DEFAULT_CAPACITY = 8;
+
+    public ResizingArrayQueue() {
+        new ArrayDeque<>(DEFAULT_CAPACITY);
+    }
+
     public ResizingArrayQueue(int capacity) {
         q = (Item[]) new Object[capacity];
         front = 0;

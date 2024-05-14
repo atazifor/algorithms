@@ -7,23 +7,20 @@
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class ArrayDeque<Item> implements Iterable<Item> {
-    private int front;
-    private int rear;
+public class LinkedListDeque<Item> implements Iterable<Item> {
+    private Node front;
+    private Node rear;
+
     private int size;
-    private Item[] deq;
 
-    private static int DEFAULT_CAPACITY = 8;
-
-    public ArrayDeque() {
-        new ArrayDeque<>(DEFAULT_CAPACITY);
+    private class Node {
+        Item item;
+        Node next;
+        Node prev;
     }
 
-    public ArrayDeque(int capacity) {
-        front = -1;
-        rear = -1;
+    public LinkedListDeque() {
         size = 0;
-        deq = (Item[]) new Object[capacity];
     }
 
     // is the deque empty?
@@ -39,38 +36,40 @@ public class ArrayDeque<Item> implements Iterable<Item> {
     // add the item to the front
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException("null items not supported");
-        if (size == deq.length)
-            resize(2 * deq.length);
-        if (front == -1) {
-            front = 0;
-            rear = 0;
-        }
-        else if (front == 0) {
-            front = deq.length - 1;
+        if (size == 0) {
+            Node node = new Node();
+            node.item = item;
+            front = node;
+            rear = node;
         }
         else {
-            front--;
+            Node oldFront = front;
+            front = new Node();
+            front.item = item;
+            front.next = oldFront;
+            oldFront.prev = front;
+            // oldFront = null;
         }
-        deq[front] = item;
         size++;
     }
 
     // add the item to the back
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException("null items not supported");
-        if (size == deq.length)
-            resize(2 * deq.length);
-        if (front == -1) {
-            front = 0;
-            rear = 0;
-        }
-        else if (rear == deq.length - 1) {
-            rear = 0;
+        if (size == 0) {
+            Node node = new Node();
+            node.item = item;
+            front = node;
+            rear = node;
         }
         else {
-            rear++;
+            Node oldRear = rear;
+            rear = new Node();
+            rear.item = item;
+            rear.prev = oldRear;
+            oldRear.next = rear;
+            // oldRear = null;
         }
-        deq[rear] = item;
         size++;
     }
 
@@ -79,19 +78,12 @@ public class ArrayDeque<Item> implements Iterable<Item> {
         if (isEmpty()) {
             throw new NoSuchElementException("deque is empty");
         }
-        Item item = deq[front];
+        Item item = front.item;
+        front = front.next;
+        if (front != null) {
+            front.prev = null;
+        }
         size--;
-        if (size == 0) {
-            front = -1;
-            rear = -1;
-        }
-        else if (front == deq.length - 1) {
-            front = 0;
-        }
-        else {
-            front++;
-        }
-        if (size == deq.length / 4) resize(deq.length / 2);
         return item;
     }
 
@@ -100,19 +92,12 @@ public class ArrayDeque<Item> implements Iterable<Item> {
         if (isEmpty()) {
             throw new NoSuchElementException("deque is empty");
         }
-        Item item = deq[rear];
+        Item item = rear.item;
+        rear = rear.prev;
+        if (rear != null) {
+            rear.next = null;
+        }
         size--;
-        if (size == 0) {
-            front = -1;
-            rear = -1;
-        }
-        else if (rear == 0) {
-            rear = deq.length - 1;
-        }
-        else {
-            rear--;
-        }
-        if (size == deq.length / 4) resize(deq.length / 2);
         return item;
     }
 
@@ -121,18 +106,18 @@ public class ArrayDeque<Item> implements Iterable<Item> {
     }
 
     private class DeqIterator implements Iterator<Item> {
-        int i = 0;
+        Node current = front;
 
         public boolean hasNext() {
-            return i < size;
+            return current != null;
         }
 
         public Item next() {
             if (!hasNext()) {
                 throw new NoSuchElementException("deque is empty");
             }
-            Item item = deq[(front + i) % deq.length];
-            i++;
+            Item item = current.item;
+            current = current.next;
             return item;
         }
 
@@ -141,26 +126,19 @@ public class ArrayDeque<Item> implements Iterable<Item> {
         }
     }
 
-    private void resize(int capacity) {
-        assert capacity > size;
-        Item[] copy = (Item[]) new Object[capacity];
-        for (int i = 0; i < size; i++) {
-            copy[i] = deq[(front + i) % deq.length];
-        }
-        front = 0;
-        rear = size - 1;
-        deq = copy;
-    }
 
     public String toString() {
+        Node current = front;
         StringBuilder s = new StringBuilder();
-        for (int i = 0; i < deq.length; i++)
-            s.append(" ").append(deq[i]);
+        while (current != null) {
+            s.append(" ").append(current.item);
+            current = current.next;
+        }
         return s.toString();
     }
 
     public static void main(String[] args) {
-        ArrayDeque<Integer> deq = new ArrayDeque<>(3);
+        LinkedListDeque<Integer> deq = new LinkedListDeque<>();
         deq.addFirst(2);
         deq.addFirst(5);
         deq.addLast(6);
@@ -171,7 +149,7 @@ public class ArrayDeque<Item> implements Iterable<Item> {
             System.out.println("i = " + i);
         }
 
-        deq = new ArrayDeque<>(3);
+        deq = new LinkedListDeque<>();
         deq.addFirst(11);
         deq.addFirst(22);
         deq.removeFirst();
@@ -182,7 +160,7 @@ public class ArrayDeque<Item> implements Iterable<Item> {
             System.out.println("j = " + j);
         }
 
-        deq = new ArrayDeque<>(3);
+        deq = new LinkedListDeque<>();
         deq.addFirst(11);
         deq.addFirst(22);
         deq.removeFirst();
