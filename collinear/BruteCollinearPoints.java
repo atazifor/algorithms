@@ -53,12 +53,7 @@ public class BruteCollinearPoints {
                         Point s = points[l];
                         if (p.slopeTo(q) == p.slopeTo(r) && p.slopeTo(q) == p.slopeTo(s)) {
                             Point[] collinearPoints = new Point[] { p, q, r, s };
-                            Arrays.sort(collinearPoints);
-                            System.out.print("p = " + p);
-                            System.out.print(" q = " + q);
-                            System.out.print(" r = " + r);
-                            System.out.print(" s = " + s);
-                            System.out.println("");
+                            Arrays.sort(collinearPoints); // so you get points in natural order
                             segmentCount++;
                             temp[counter++] = new LineSegment(collinearPoints[0],
                                                               collinearPoints[3]);

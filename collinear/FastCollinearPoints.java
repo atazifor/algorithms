@@ -41,7 +41,7 @@ public class FastCollinearPoints {
 
     public LineSegment[] segments() {// the line segments
         int n = points.length;
-        int maxSegments = n * (n - 1) * (n - 2) * (n - 3) / 24;
+        int maxSegments = n; // max collinear points of size 4 can't be more than  n
         LineSegment[] temp = new LineSegment[maxSegments];
 
         Point[] copyOfPoints = points.clone();
