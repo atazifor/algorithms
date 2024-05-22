@@ -45,8 +45,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         if (n == 0) throw new NoSuchElementException("can't dequeue empty queue");
         int i = StdRandom.uniformInt(n);
         Item item = items[i];
+        items[i] = null;
         items[i] = items[--n]; // replace item to be removed with last item inserted
-        if (n == items.length / 4) resize(items.length / 2);
+        if (n > 0 && n == items.length / 4) resize(items.length / 2);
         return item;
     }
 
@@ -79,9 +80,10 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
         public Item next() {
-            if (!hasNext()) throw new UnsupportedOperationException("queue is empty");
+            if (!hasNext()) throw new NoSuchElementException("queue is empty");
             int j = StdRandom.uniformInt(i);
             Item item = copy[j];
+            copy[j] = null;
             copy[j] = copy[--i];
             return item;
         }
@@ -126,6 +128,15 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         for (Iterator<Integer> it = q.iterator(); it.hasNext(); ) {
             System.out.println("it.next() = " + it.next());
         }
+
+        q = new RandomizedQueue<>();
+        q.enqueue(5);
+        q.enqueue(2);
+        StdOut.println("Sample " + q.sample());
+        StdOut.println("Another Sample " + q.sample());
+        StdOut.println("Dequeued " + q.dequeue());
+        StdOut.println("Dequeued " + q.dequeue());
+        StdOut.println("queue " + q);
 
     }
 }

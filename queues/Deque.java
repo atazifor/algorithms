@@ -13,10 +13,10 @@ public class Deque<Item> implements Iterable<Item> {
     private int size;
     private Item[] deq;
 
-    private static int DEFAULT_CAPACITY = 8;
+    private static int DEFAULT_CAPACITY = 3;
 
     public Deque() {
-        new Deque<>(DEFAULT_CAPACITY);
+        this(DEFAULT_CAPACITY);
     }
 
     private Deque(int capacity) {
@@ -80,6 +80,7 @@ public class Deque<Item> implements Iterable<Item> {
             throw new NoSuchElementException("deque is empty");
         }
         Item item = deq[front];
+        if (size == deq.length / 4) resize(deq.length / 2);
         size--;
         if (size == 0) {
             front = -1;
@@ -91,7 +92,6 @@ public class Deque<Item> implements Iterable<Item> {
         else {
             front++;
         }
-        if (size == deq.length / 4) resize(deq.length / 2);
         return item;
     }
 
@@ -101,6 +101,7 @@ public class Deque<Item> implements Iterable<Item> {
             throw new NoSuchElementException("deque is empty");
         }
         Item item = deq[rear];
+        if (size == deq.length / 4) resize(deq.length / 2);
         size--;
         if (size == 0) {
             front = -1;
@@ -112,7 +113,6 @@ public class Deque<Item> implements Iterable<Item> {
         else {
             rear--;
         }
-        if (size == deq.length / 4) resize(deq.length / 2);
         return item;
     }
 
@@ -160,7 +160,7 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public static void main(String[] args) {
-        Deque<Integer> deq = new Deque<>(3);
+        Deque<Integer> deq = new Deque<>();
         deq.addFirst(2);
         deq.addFirst(5);
         deq.addLast(6);
@@ -171,7 +171,7 @@ public class Deque<Item> implements Iterable<Item> {
             System.out.println("i = " + i);
         }
 
-        deq = new Deque<>(3);
+        deq = new Deque<>();
         deq.addFirst(11);
         deq.addFirst(22);
         deq.removeFirst();
@@ -182,7 +182,7 @@ public class Deque<Item> implements Iterable<Item> {
             System.out.println("j = " + j);
         }
 
-        deq = new Deque<>(3);
+        deq = new Deque<>();
         deq.addFirst(11);
         deq.addFirst(22);
         deq.removeFirst();
@@ -205,5 +205,16 @@ public class Deque<Item> implements Iterable<Item> {
         deq.removeLast();
         deq.removeFirst();
         System.out.println("deq = " + deq);
+
+        deq = new Deque<>();
+        deq.addFirst(11);
+        System.out.println("a = " + deq);
+        deq.removeLast();
+        System.out.println("b = " + deq);
+        deq.isEmpty();
+        deq.addFirst(33);
+        System.out.println("c = " + deq);
+        deq.removeLast();
+        System.out.println("d = " + deq.isEmpty());
     }
 }
