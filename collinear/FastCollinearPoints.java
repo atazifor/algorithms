@@ -12,8 +12,7 @@ import java.util.Arrays;
 
 public class FastCollinearPoints {
 
-    private Point[] points;
-    private int segmentCount;
+    private final LineSegment[] segments;
 
     public FastCollinearPoints(
             Point[] points) {   // finds all line segments containing 4 or more points
@@ -31,22 +30,14 @@ public class FastCollinearPoints {
             if (copy[i].compareTo(copy[i - 1]) == 0)
                 throw new IllegalArgumentException("duplicate points provided");
         }
-        this.points = points;
-        segmentCount = 0;
-    }
 
-    public int numberOfSegments() {// the number of line segments
-        return segmentCount;
-    }
-
-    public LineSegment[] segments() {// the line segments
+        int segmentCount = 0;
         int n = points.length;
-        segmentCount = 0;
         int maxSegments = n; // max collinear points of size 4 can't be more than  n
         LineSegment[] temp = new LineSegment[maxSegments];
 
         Point[] copyOfPoints = points.clone();
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n && n >= 3; i++) {
             Point p = points[i];
             Arrays.sort(copyOfPoints, p.slopeOrder());
             double slope = p.slopeTo(copyOfPoints[1]);
@@ -78,11 +69,18 @@ public class FastCollinearPoints {
                 }
             }
         }
-        LineSegment[] segments = new LineSegment[segmentCount];
+
+        segments = new LineSegment[segmentCount];
         for (int i = 0; i < segmentCount; i++)
             segments[i] = temp[i];
-        return segments;
+    }
 
+    public int numberOfSegments() {// the number of line segments
+        return segments.length;
+    }
+
+    public LineSegment[] segments() {// the line segments
+        return segments;
     }
 
     public static void main(String[] args) {
