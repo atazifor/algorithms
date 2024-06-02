@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Solver {
     // find a solution to the initial board (using the A* algorithm)
-    private MinPQ<Node> minPQ;
+    // private MinPQ<Node> minPQ;
     private List<Board> path;
     private int numberOfMoves;
     private final Board initial;
@@ -22,7 +22,7 @@ public class Solver {
     public Solver(Board initial) {
         if (initial == null) throw new IllegalArgumentException("Constructor can't be null");
         this.initial = initial;
-        this.minPQ = new MinPQ<>();
+        // this.minPQ = new MinPQ<>();
         this.solvable = false;
         this.path = null;
         this.numberOfMoves = -1;
@@ -38,38 +38,39 @@ public class Solver {
             numberOfMoves = 0;
             return;
         }
-        List<Board> initialPath = search(initial);
-        if (initialPath != null) {
-            path = initialPath;
+
+        MinPQ<Node> initialQ = new MinPQ<>();
+        initialQ.insert(new Node(initial, 0, null));
+        MinPQ<Node> twinQ = new MinPQ<>();
+        twinQ.insert(new Node(initial.twin(), 0, null));
+        Node solutionNode = null;
+        while (true) {
+            solutionNode = step(initialQ);
+            // guaranteed we must get a solution from either the initial board [solutionNode != null]
+            // OR
+            // its twin [step(twinQ) != null]
+            if (solutionNode != null || step(twinQ) != null) break;
+        }
+
+        if (solutionNode != null) { // we got the solution from the initial board
+            path = reconstructPath(solutionNode);
             solvable = true;
-            numberOfMoves = initialPath.size() - 1;
+            numberOfMoves = path.size() - 1;
         }
         else {
-            List<Board> twinPath = search(initial.twin());
-            if (twinPath != null) {
-                path = null;
-                solvable = false;
-                numberOfMoves = -1;
-            }
+            path = null;
+            solvable = false;
+            numberOfMoves = -1;
         }
     }
 
-    private List<Board> search(Board initial) {
-        minPQ.insert(new Node(initial, 0, null));
-        List<Board> visited = new ArrayList<>();
-        Node node = null;
-        while (!minPQ.isEmpty()) {
-            node = minPQ.delMin();
-            if (node.board.isGoal()) {
-                return reconstructPath(node);
-            }
-            visited.add(node.board);
-            Iterable<Board> neighbors = node.board.neighbors();
-            for (Board neighbor : neighbors) {
-                if (!visited.contains(neighbor)) {
-                    minPQ.insert(new Node(neighbor, node.moves + 1, node));
-                }
-            }
+    private Node step(MinPQ<Node> minPQ) {
+        Node node = minPQ.delMin();
+        if (node.board.isGoal()) return node;
+        Iterable<Board> neighbors = node.board.neighbors();
+        for (Board neighbor : neighbors) {
+            if (node.previous != null && node.previous.board.equals(neighbor)) continue;
+            minPQ.insert(new Node(neighbor, node.moves + 1, node));
         }
         return null;
     }
