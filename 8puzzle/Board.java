@@ -9,6 +9,8 @@ import java.util.List;
 
 public class Board {
     private final int[][] tiles;
+    private int blankRow;
+    private int blankCol;
 
     public Board(int[][] tiles) {
         int n = tiles.length;
@@ -16,6 +18,10 @@ public class Board {
         for (int i = 0; i < n; i++) { // defensive copy
             for (int j = 0; j < n; j++) {
                 this.tiles[i][j] = tiles[i][j];
+                if (tiles[i][j] == 0) {
+                    blankRow = i;
+                    blankCol = j;
+                }
             }
         }
     }
@@ -38,10 +44,21 @@ public class Board {
         return tiles.length;
     }
 
+    private static int[][] goal(int n) {
+        int[][] goal = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                goal[i][j] = i * n + j + 1;
+            }
+        }
+        goal[n - 1][n - 1] = 0;
+        return goal;
+    }
+
     // number of tiles out of place
     public int hamming() {
         int n = dimension();
-        int[][] goal = goal();
+        int[][] goal = goal(n);
         int count = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -69,69 +86,111 @@ public class Board {
 
     // is this board the goal board?
     public boolean isGoal() {
-        return this.equals(this.goal());
+        int n = dimension();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (!(i == (n - 1) && j == (n - 1)))
+                    if (tiles[i][j] != i * n + j + 1) return false;
+            }
+        }
+        if (tiles[n - 1][n - 1] != 0) return false;
+        return true;
     }
 
     // does this board equal y?
     public boolean equals(Object y) {
-        if (!(y instanceof Board)) return false;
+        if (this == y) {
+            return true;
+        }
+        if (y == null || getClass() != y.getClass()) {
+            return false;
+        }
         Board other = (Board) y;
-        if (this.dimension() != other.dimension()) return false;
-        return this.toString().equals(other.toString());
+        if (this.dimension() != other.dimension()) {
+            return false;
+        }
+        for (int i = 0; i < this.dimension(); i++) {
+            for (int j = 0; j < this.dimension(); j++) {
+                if (this.tiles[i][j] != other.tiles[i][j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        int row = -1;
-        int col = -1;
         int n = dimension();
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (tiles[i][j] == 0) {
-                    row = i;
-                    col = j;
-                    break;
-                }
-            }
-            if (row != -1 || col != -1) break;
-        }
         List<Board> neigbhors = new ArrayList<>();
-        if (col - 1 >= 0) neigbhors.add(neighbor(row, col, row, col - 1));
-        if (row - 1 >= 0) neigbhors.add(neighbor(row, col, row - 1, col));
-        if (col + 1 < n) neigbhors.add(neighbor(row, col, row, col + 1));
-        if (row + 1 < n) neigbhors.add(neighbor(row, col, row + 1, col));
+        if (blankCol - 1 >= 0) neigbhors.add(neighbor(blankRow, blankCol - 1));
+        if (blankRow - 1 >= 0) neigbhors.add(neighbor(blankRow - 1, blankCol));
+        if (blankCol + 1 < n) neigbhors.add(neighbor(blankRow, blankCol + 1));
+        if (blankRow + 1 < n) neigbhors.add(neighbor(blankRow + 1, blankCol));
 
         return neigbhors;
     }
 
-    private Board neighbor(int row, int col, int i, int j) {
-        int swap = tiles[row][col];
-        tiles[row][col] = tiles[i][j];
-        tiles[i][j] = swap;
-        Board neighbor = new Board(tiles); // defensive copy of tiles will be created
-        // go back to original state of tiles. Will not affect copy in neighbor
-        swap = tiles[row][col];
-        tiles[row][col] = tiles[i][j];
-        tiles[i][j] = swap;
-        return neighbor;
+    private Board neighbor(int row, int col) {
+        int swap = tiles[blankRow][blankCol];
+
+        int n = dimension();
+        int[][] copy = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                copy[i][j] = tiles[i][j];
+                if (i == blankRow && j == blankCol) copy[i][j] = tiles[row][col];
+                if (i == row && j == col) copy[i][j] = swap;
+            }
+        }
+        return new Board(copy);
     }
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        return this.neighbors().iterator().next();
-    }
-
-    private int[][] goal() {
         int n = dimension();
-        int[][] goal = new int[n][n];
+        int[][] copy = copy(tiles);
+        int r1 = -1;
+        int r2 = -1;
+        int c1 = -1;
+        int c2 = -1;
+        // swap tiles that are adjacent to each other on the same row
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                goal[i][j] = i * n + j + 1;
+            for (int j = 0; j < n - 1; j++) {
+                if (copy[i][j] != 0 && copy[i][j + 1] != 0) {
+                    exch(copy, i, j, i, j + 1);
+                    return new Board(copy);
+                }
             }
         }
-        goal[n - 1][n - 1] = 0;
+        // in case no adjacent non-zero tiles in rows, check in columns
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n; j++) {
+                if (copy[i][j] != 0 && copy[i + 1][j] != 0) {
+                    exch(copy, i, j, i + 1, j);
+                    return new Board(copy);
+                }
+            }
+        }
+        throw new RuntimeException("No valid twin found");
+    }
 
-        return goal;
+    // swap two tiles (r1,c1) and (r2, c2)
+    private void exch(int[][] a, int r1, int c1, int r2, int c2) {
+        int swap = a[r1][c1];
+        a[r1][c1] = a[r2][c2];
+        a[r2][c2] = swap;
+    }
+
+    private int[][] copy(int[][] a) {
+        int n = a.length;
+        int[][] b = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                b[i][j] = a[i][j];
+            }
+        }
+        return b;
     }
 
     public static void main(String[] args) {
@@ -158,5 +217,56 @@ public class Board {
         for (Board neighbor : board.neighbors()) {
             System.out.println(neighbor);
         }
+
+        int[][] tiles3 = {
+                { 1, 2, 3 },
+                { 4, 5, 8 },
+                { 7, 6, 0 }
+        };
+        board = new Board(tiles3);
+        System.out.println(board.toString());
+        System.out.println("tiles3 is goal? " + board.isGoal());
+
+        int[][] tiles4 = {
+                { 1, 2, 3 },
+                { 4, 5, 6 },
+                { 7, 8, 0 }
+        };
+        board = new Board(tiles4);
+        System.out.println(board.toString());
+        System.out.println("tiles4 is goal? " + board.isGoal());
+
+        int[][] tiles5 = {
+                { 1, 3 },
+                { 2, 0 }
+        };
+        board = new Board(tiles5);
+        System.out.println(board.toString());
+        System.out.println("tiles5 is goal? " + board.isGoal());
+        System.out.println("tiles5 twin " + board.twin());
+
+        int[][] tiles6 = {
+                { 3, 0 },
+                { 1, 2 }
+        };
+        int[][] tiles7 = {
+                { 3, 2 },
+                { 1, 0 }
+        };
+        board = new Board(tiles6);
+        System.out.println(board.toString());
+        System.out.println("tiles6 equal? " + board.equals(new Board(tiles6)));
+        Board board7 = new Board(tiles7);
+        List<Board> visited = new ArrayList<>();
+        visited.add(board7);
+        for (Board b : board.neighbors()) {
+            System.out.print("board7 = " + board7);
+            System.out.print("\t");
+            System.out.println("neighor = " + b);
+            System.out.println("b.equals(tiles7) = " + b.equals(board7));
+            if (!visited.contains(b))
+                visited.add(b);
+        }
+        System.out.println("visited.size() = " + visited.size());
     }
 }
