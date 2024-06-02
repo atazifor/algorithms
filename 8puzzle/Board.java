@@ -12,8 +12,14 @@ public class Board {
     private int blankRow;
     private int blankCol;
 
+    private int manhathan;
+    private int hamming;
+
     public Board(int[][] tiles) {
         int n = tiles.length;
+        int[][] goal = goal(n);
+        int manhattanSum = 0;
+        int hammingSum = 0;
         this.tiles = new int[n][n];
         for (int i = 0; i < n; i++) { // defensive copy
             for (int j = 0; j < n; j++) {
@@ -22,8 +28,16 @@ public class Board {
                     blankRow = i;
                     blankCol = j;
                 }
+                else {
+                    int row = (tiles[i][j] - 1) / n;
+                    int col = (tiles[i][j] - 1) % n;
+                    manhattanSum += Math.abs(row - i) + Math.abs(col - j);
+                    if (tiles[i][j] != goal[i][j]) hammingSum++;
+                }
             }
         }
+        this.manhathan = manhattanSum;
+        this.hamming = hammingSum;
     }
 
     public String toString() {
@@ -57,31 +71,12 @@ public class Board {
 
     // number of tiles out of place
     public int hamming() {
-        int n = dimension();
-        int[][] goal = goal(n);
-        int count = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (tiles[i][j] == 0) continue; // black square
-                if (tiles[i][j] != goal[i][j]) count++;
-            }
-        }
-        return count;
+        return hamming;
     }
 
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
-        int n = dimension();
-        int sum = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (tiles[i][j] == 0) continue; // black square
-                int row = (tiles[i][j] - 1) / n;
-                int col = (tiles[i][j] - 1) % n;
-                sum += Math.abs(row - i) + Math.abs(col - j);
-            }
-        }
-        return sum;
+        return manhathan;
     }
 
     // is this board the goal board?
