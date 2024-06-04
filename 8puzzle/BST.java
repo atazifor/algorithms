@@ -79,6 +79,23 @@ public class BST<Key extends Comparable<Key>, Value> {
         }
     }
 
+    /*
+    number keys less than key
+     */
+    public int rank(Key key) {
+        return rank(root, key);
+    }
+
+    private int rank(Node x, Key key) {
+        if (x == null) return 0;
+        int cmp = key.compareTo(x.key);
+        if (cmp == 0) return size(x.left);
+        else if (cmp < 0) return rank(x.left, key);
+        else {
+            return size(x.left) + 1 + rank(x.right, key);
+        }
+    }
+
     public void printInOrder() {
         inOrder(root);
     }
@@ -125,6 +142,7 @@ public class BST<Key extends Comparable<Key>, Value> {
         int ceiling = (bst.min() + bst.max()) / 2;
         System.out.println("floor(" + floor + ") = " + bst.floor(floor));
         System.out.println("ceiling(" + ceiling + ") = " + bst.ceiling(ceiling));
+        System.out.println("rank(" + ceiling + ") = " + bst.rank(ceiling));
     }
 
     private class Node {
