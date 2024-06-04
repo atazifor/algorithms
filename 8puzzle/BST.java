@@ -25,16 +25,26 @@ public class BST<Key extends Comparable<Key>, Value> {
         else return search(x.right, key);
     }
 
+    public int size() {
+        return size(root);
+    }
+
+    private int size(Node x) {
+        if (x == null) return 0;
+        else return x.size;
+    }
+
     public void put(Key key, Value val) {
         root = put(root, key, val);
     }
 
     private Node put(Node x, Key key, Value val) {
-        if (x == null) return new Node(key, val);
+        if (x == null) return new Node(key, val, 1);
         int cmp = key.compareTo(x.key);
         if (cmp == 0) x.val = val;
         else if (cmp < 0) x.left = put(x.left, key, val);
         else x.right = put(x.right, key, val);
+        x.size = 1 + size(x.left) + size(x.right);
         return x;
     }
 
@@ -108,6 +118,7 @@ public class BST<Key extends Comparable<Key>, Value> {
         }
         bst.printInOrder();
         System.out.println();
+        System.out.println("bst.size() = " + bst.size());
         System.out.println("min() = " + bst.min());
         System.out.println("max() = " + bst.max());
         int floor = bst.max() - 10;
@@ -121,10 +132,12 @@ public class BST<Key extends Comparable<Key>, Value> {
         Value val;
         Node left;
         Node right;
+        int size; // size of subtree containing this node.
 
-        public Node(Key key, Value val) {
+        public Node(Key key, Value val, int size) {
             this.key = key;
             this.val = val;
+            this.size = size;
         }
 
     }
