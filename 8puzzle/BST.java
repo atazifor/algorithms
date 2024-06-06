@@ -4,6 +4,7 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdRandom;
 
 public class BST<Key extends Comparable<Key>, Value> {
@@ -56,6 +57,13 @@ public class BST<Key extends Comparable<Key>, Value> {
         return ceiling(root, key);
     }
 
+
+    public Iterable<Key> keys() {
+        Queue<Key> queue = new Queue<>();
+        inorder(root, queue);
+        return queue;
+    }
+
     private Key floor(Node x, Key key) {
         if (x == null) return null;
         int cmp = key.compareTo(x.key);
@@ -97,16 +105,53 @@ public class BST<Key extends Comparable<Key>, Value> {
     }
 
     public void printInOrder() {
-        inOrder(root);
+        for (Key key : keys()) System.out.print(" " + key);
     }
 
-    public Key min() {
+    public Node min() {
         return min(root);
     }
 
-    private Key min(Node x) {
+    public void delMin() {
+        // need to re-assign  root because may be root is the  min
+        root = delMin(root);
+    }
+
+    /**
+     * returns the root of the sub-tree node (node the node that was deleted)
+     *
+     * @param x root of sub-tree to delete
+     * @return
+     */
+    private Node delMin(Node x) {
         if (x == null) return null;
-        if (x.left == null) return x.key;
+        if (x.left == null) return x.right;
+        else x.left = delMin(x.left);
+        // update count
+        x.size = 1 + size(x.left) + size(x.right);
+        return x;
+    }
+
+    private Node del(Node x, Key key) {
+        if (x == null) return null;
+        int cmp = key.compareTo(x.key);
+        if (cmp < 0) x.left = del(x.left, key);
+        else if (cmp > 0) x.right = del(x.right, key);
+        else {
+            if (x.left == null) return x.right;
+            if (x.right == null) return x.left;
+            Node t = x;
+            x = min(t.right);
+            x.right = delMin(t.right);
+            x.left = t.left;
+        }
+        x.size = 1 + size(x.left) + size(x.right);
+        return x;
+    }
+
+    private Node min(Node x) {
+        if (x == null) return null;
+        if (x.left == null) return x;
         else return min(x.left);
     }
 
@@ -120,12 +165,14 @@ public class BST<Key extends Comparable<Key>, Value> {
         else return max(x.right);
     }
 
-    private void inOrder(Node x) {
+
+    private void inorder(Node x, Queue<Key> q) {
         if (x == null) return;
-        inOrder(x.left);
-        System.out.print(" " + x.val);
-        inOrder(x.right);
+        inorder(x.left, q);
+        q.enqueue(x.key);
+        inorder(x.right, q);
     }
+
 
     public static void main(String[] args) {
         BST<Integer, Integer> bst = new BST<>();
@@ -139,10 +186,23 @@ public class BST<Key extends Comparable<Key>, Value> {
         System.out.println("min() = " + bst.min());
         System.out.println("max() = " + bst.max());
         int floor = bst.max() - 10;
-        int ceiling = (bst.min() + bst.max()) / 2;
+        int ceiling = (bst.min().key + bst.max()) / 2;
         System.out.println("floor(" + floor + ") = " + bst.floor(floor));
         System.out.println("ceiling(" + ceiling + ") = " + bst.ceiling(ceiling));
         System.out.println("rank(" + ceiling + ") = " + bst.rank(ceiling));
+    }
+
+    public boolean isBst() {
+        // use what ever is is absolute min and max for the key.
+        // for Integer, it's Integer.MIN_VALUE, Integer.MAX_VALUE
+        return isBst(root, null, null);
+    }
+
+    private boolean isBst(Node x, Key min, Key max) {
+        if (x == null) return true;
+        if (x.key.compareTo(min) > 0 && x.key.compareTo(max) < 0)
+            return isBst(x.left, min, x.key) && isBst(x.right, x.key, max);
+        else return false;
     }
 
     private class Node {
