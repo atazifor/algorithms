@@ -14,7 +14,7 @@ import java.util.TreeSet;
 
 public class PointSET {
     // constructs an empty set  of points
-    TreeSet<Point2D> points;
+    private TreeSet<Point2D> points;
 
     public PointSET() {
         points = new TreeSet<>();
@@ -22,7 +22,7 @@ public class PointSET {
 
     // is the set empty
     public boolean isEmpty() {
-        return false;
+        return points.isEmpty();
     }
 
     // number of points in the set
