@@ -4,6 +4,7 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
@@ -148,7 +149,7 @@ public class KdTree {
                              double ymin,
                              double ymax) {
         if (node == null) return false;
-
+        if (node.point.equals(point)) return true;
         int cmp = 0;
         // even levels use x-coordinate
         boolean isEvenLevel = level % 2 == 0;
@@ -167,7 +168,7 @@ public class KdTree {
                 return contains(node.right, point, level + 1, xmin, xmax, node.point.y(), ymax);
         }
         else {
-            return true;
+            return false;
         }
     }
 
@@ -206,9 +207,24 @@ public class KdTree {
         System.out.println("kdTree contains [0.5, 0.4] " + kdTree.contains(new Point2D(0.5, 0.4)));
         System.out.println("kdTree contains [0.9, 0.6] " + kdTree.contains(new Point2D(0.9, 0.6)));
         System.out.println("kdTree contains [0.9, 0.1] " + kdTree.contains(new Point2D(0.9, 0.1)));
-        System.out.println("About to Draw Now");
-        rectHV.draw();
-        kdTree.draw();
+        // System.out.println("About to Draw Now");
+        // rectHV.draw();
+        // kdTree.draw();
+
+        String filename = args[0];
+        In in = new In(filename);
+        while (!in.isEmpty()) {
+            double x = in.readDouble();
+            double y = in.readDouble();
+            Point2D p = new Point2D(x, y);
+            kdTree.insert(p);
+        }
+        // brute.draw();
+        System.out.println("kdTree.size() = " + kdTree.size());
+        System.out.println("contains (0.01, 0.51) = " + kdTree.contains(
+                new Point2D(0.01, 0.51)));
+        System.out.println("contains (0.785, 0.725) = " + kdTree.contains(
+                new Point2D(0.785, 0.725)));
     }
 
 }
