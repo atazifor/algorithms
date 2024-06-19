@@ -36,6 +36,8 @@ public class KdTree {
     }
 
     public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("point can't be null");
+        if (isEmpty()) return null;
         Point2D nearestSoFar = new Point2D(Double.MAX_VALUE, Double.MAX_VALUE);
         nearestSoFar = nearest(root, p, nearestSoFar);
         return nearestSoFar;
@@ -65,6 +67,7 @@ public class KdTree {
     }
 
     public void insert(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("can't insert a null point");
         root = insert(root, p, 0, 0, 1, 0, 1);
         N++;
     }
@@ -130,18 +133,25 @@ public class KdTree {
                 node.left = insert(node.left, point, level + 1, xmin, xmax, ymin, node.point.y());
         }
         else if (cmp > 0) {
-            if (isEvenLevel)
+            if (isEvenLevel) {
                 node.right = insert(node.right, point, level + 1, node.point.x(), xmax, ymin, ymax);
-            else
+            }
+            else {
                 node.right = insert(node.right, point, level + 1, xmin, xmax, node.point.y(), ymax);
+            }
         }
         else {
-            node.point = point;
+            if (!node.point.equals(point)) {
+                node.right = insert(node.right, point, level + 1,
+                                    isEvenLevel ? node.point.x() : xmin, xmax,
+                                    isEvenLevel ? ymin : node.point.y(), ymax);
+            }
         }
         return node;
     }
 
     public boolean contains(Point2D point2D) {
+        if (point2D == null) throw new IllegalArgumentException("point can't be null");
         return contains(root, point2D, 0, 0, 1, 0, 1);
     }
 
@@ -168,11 +178,19 @@ public class KdTree {
                 return contains(node.right, point, level + 1, xmin, xmax, node.point.y(), ymax);
         }
         else {
-            return false;
+            if (isEvenLevel) {
+                return contains(node.left, point, level + 1, xmin, node.point.x(), ymin, ymax) ||
+                        contains(node.right, point, level + 1, node.point.x(), xmax, ymin, ymax);
+            }
+            else {
+                return contains(node.left, point, level + 1, xmin, xmax, ymin, node.point.y()) ||
+                        contains(node.right, point, level + 1, xmin, xmax, node.point.y(), ymax);
+            }
         }
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) throw new IllegalArgumentException("range rectangle can't be null");
         List<Point2D> result = new ArrayList<>();
         range(root, rect, result);
         return result;
