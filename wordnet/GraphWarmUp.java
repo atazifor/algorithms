@@ -4,6 +4,8 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.Stack;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +28,13 @@ public class GraphWarmUp {
         return postOrder;
     }
 
+    public Iterable<String> dfsPostOrderUsingStack(Graph graph, String s) {
+        Set<String> marked = new HashSet<>(graph.V());
+        Stack<String> postOrder = new Stack<>();
+        dfsPostOrder(graph, s, marked, postOrder);
+        return postOrder;
+    }
+
     private void dfsPostOrder(Graph graph, String v, Set<String> marked, List<String> postOrder) {
         marked.add(v);
         for (String w : graph.adj(v)) {
@@ -33,6 +42,15 @@ public class GraphWarmUp {
                 dfsPostOrder(graph, w, marked, postOrder);
         }
         postOrder.add(v); // this is post order processing since descendants were processed first
+    }
+
+    private void dfsPostOrder(Graph graph, String v, Set<String> marked, Stack<String> postOrder) {
+        marked.add(v);
+        for (String w : graph.adj(v)) {
+            if (!marked.contains(w))
+                dfsPostOrder(graph, w, marked, postOrder);
+        }
+        postOrder.push(v); // this is post order processing since descendants were processed first
     }
 
     private static class Graph {
@@ -102,9 +120,15 @@ public class GraphWarmUp {
         graph.addEdge("B", "E");
         graph.addEdge("C", "F");
 
+        System.out.println("number of vertices = " + graph.V());
+        System.out.println("number of edges = " + graph.E());
+
         GraphWarmUp graphWarmUp = new GraphWarmUp();
 
         Iterable<String> sorted = graphWarmUp.dfsPostOrder(graph, "A");
+        System.out.println(sorted); // Output: [A, C, F, B, E, D]
+
+        sorted = graphWarmUp.dfsPostOrderUsingStack(graph, "A");
         System.out.println(sorted); // Output: [A, C, F, B, E, D]
     }
 }
