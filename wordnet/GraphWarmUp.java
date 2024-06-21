@@ -20,6 +20,25 @@ public class GraphWarmUp {
 
     }
 
+    /**
+     * for any edge u->v, the order of vertices must be such that
+     * u appears before v (topological order)
+     * see that we can achieve this if we process all descendants of u and then process u last
+     * [hence post order]
+     *
+     * @param graph
+     * @return
+     */
+    public Iterable<String> topologicalSort(Graph graph) {
+        Set<String> marked = new HashSet<>(graph.V());
+        Stack<String> postOrder = new Stack<>();
+        for (String u : graph.vertices()) {
+            if (!marked.contains(u))
+                dfsPostOrder(graph, u, marked, postOrder);
+        }
+        return postOrder;
+    }
+
     public Iterable<String> dfsPostOrder(Graph graph, String s) {
         Set<String> marked = new HashSet<>(graph.V());
         List<String> postOrder = new ArrayList<>();
@@ -77,6 +96,10 @@ public class GraphWarmUp {
             else return new ArrayList<>();
         }
 
+        public Iterable<String> vertices() {
+            return graph.keySet();
+        }
+
         public int degree(String v) {
             return adj(v).size();
         }
@@ -126,9 +149,15 @@ public class GraphWarmUp {
         GraphWarmUp graphWarmUp = new GraphWarmUp();
 
         Iterable<String> sorted = graphWarmUp.dfsPostOrder(graph, "A");
+        System.out.println("== Post order of graph  ==");
         System.out.println(sorted); // Output: [A, C, F, B, E, D]
 
         sorted = graphWarmUp.dfsPostOrderUsingStack(graph, "A");
+        System.out.println("== Post order of graph using stack  ==");
+        System.out.println(sorted); // Output: [A, C, F, B, E, D]
+
+        sorted = graphWarmUp.topologicalSort(graph);
+        System.out.println("== Topological sort graph using stack  ==");
         System.out.println(sorted); // Output: [A, C, F, B, E, D]
     }
 }
