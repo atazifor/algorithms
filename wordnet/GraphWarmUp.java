@@ -4,8 +4,6 @@
  *  Description:
  **************************************************************************** */
 
-import edu.princeton.cs.algs4.Stack;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 public class GraphWarmUp {
 
@@ -70,6 +69,38 @@ public class GraphWarmUp {
                 dfsPostOrder(graph, w, marked, postOrder);
         }
         postOrder.push(v); // this is post order processing since descendants were processed first
+    }
+
+    public Iterable<String> topologicalSortWithCycleDetection(Graph graph) {
+        Set<String> marked = new HashSet<>(graph.V());
+        Stack<String> postOrder = new Stack<>();
+        Set<String> cycleDetecter = new HashSet<>();
+        for (String v : graph.vertices()) {
+            if (!marked.contains(v)) {
+                boolean isNonCyclic = dfsPostOrderCycleDetection(graph, v, marked, postOrder,
+                                                                 cycleDetecter);
+                if (!isNonCyclic) throw new RuntimeException("Cycle detected in the graph");
+            }
+        }
+        return postOrder;
+    }
+
+    private boolean dfsPostOrderCycleDetection(Graph graph, String v, Set<String> marked,
+                                               Stack<String> postOrder,
+                                               Set<String> cycleDetector) {
+        marked.add(v);
+        cycleDetector.add(v);
+        for (String w : graph.adj(v)) {
+            if (cycleDetector.contains(w)) return false;
+            if (!marked.contains(w)) {
+                if (!dfsPostOrderCycleDetection(graph, w, marked, postOrder, cycleDetector)) {
+                    return false;
+                }
+            }
+        }
+        cycleDetector.remove(v);
+        postOrder.push(v);
+        return true;
     }
 
     private static class Graph {
@@ -159,5 +190,31 @@ public class GraphWarmUp {
         sorted = graphWarmUp.topologicalSort(graph);
         System.out.println("== Topological sort graph using stack  ==");
         System.out.println(sorted); // Output: [A, C, F, B, E, D]
+        sorted = graphWarmUp.topologicalSortWithCycleDetection(graph);
+        System.out.println("== Topological sort graph using stack and Cycle detection ==");
+        System.out.println(sorted); // Output: [A, C, F, B, E, D]
+        /** Create a cycle
+         *     A
+         *    / \
+         *   B   C
+         *  / \   \
+         * D   E   F
+         *          \
+         *           A
+         */
+        graph = new Graph();
+        graph.addEdge("A", "B");
+        graph.addEdge("A", "C");
+        graph.addEdge("B", "D");
+        graph.addEdge("B", "E");
+        graph.addEdge("C", "F");
+        graph.addEdge("F", "A");
+        sorted = graphWarmUp.dfsPostOrder(graph, "A");
+        System.out.println("== Post order of graph with cycle ==");
+        System.out.println(sorted); // Output: [A, C, F, B, E, D]
+        sorted = graphWarmUp.topologicalSortWithCycleDetection(graph);
+        System.out.println("== Topological sort graph using stack and Cycle detection ==");
+        System.out.println(sorted); // Output: [A, C, F, B, E, D]
+
     }
 }
