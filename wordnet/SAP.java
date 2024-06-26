@@ -52,12 +52,32 @@ public class SAP {
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null) throw new IllegalArgumentException("args can't be null");
+        for (Integer x : v) {
+            if (v == null) throw new IllegalArgumentException("an iterable can't have a null item");
+            if (x < 0 || x >= G.V())
+                throw new IllegalArgumentException("an iterable has an out of bound item");
+        }
+        for (Integer x : w) {
+            if (v == null) throw new IllegalArgumentException("an iterable can't have a null item");
+            if (x < 0 || x >= G.V())
+                throw new IllegalArgumentException("an iterable has an out of bound item");
+        }
         return bfsAncestor(v, w).distance;
     }
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null) throw new IllegalArgumentException("args can't be null");
+        for (Integer x : v) {
+            if (v == null) throw new IllegalArgumentException("an iterable can't have a null item");
+            if (x < 0 || x >= G.V())
+                throw new IllegalArgumentException("an iterable has an out of bound item");
+        }
+        for (Integer x : w) {
+            if (v == null) throw new IllegalArgumentException("an iterable can't have a null item");
+            if (x < 0 || x >= G.V())
+                throw new IllegalArgumentException("an iterable has an out of bound item");
+        }
         return bfsAncestor(v, w).ancestor;
     }
 
