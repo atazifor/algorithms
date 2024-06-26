@@ -18,7 +18,7 @@ import java.util.TreeMap;
 
 public class WordNet {
 
-    private final Digraph graph;
+    // private final Digraph graph;
     private final TreeMap<String, Integer> bst; // key: word | value: synset id
 
     private final Map<Integer, String> synIdToString;
@@ -54,7 +54,7 @@ public class WordNet {
         }
         // line count
         // System.out.println("lineCount = " + lineCount);
-        graph = new Digraph(lineCount);
+        Digraph graph = new Digraph(lineCount);
         In edges = new In(hypernyms);
         while (!edges.isEmpty()) {
             String line = edges.readLine();
@@ -69,7 +69,7 @@ public class WordNet {
         Set<Integer> stack = new HashSet<>();
         for (int s = 0; s < graph.V(); s++) {
             if (!marked[s]) {
-                if (isCyclic(s, marked, stack))
+                if (isCyclic(graph, s, marked, stack))
                     throw new IllegalArgumentException("Graph has cycles");
             }
         }
@@ -77,7 +77,7 @@ public class WordNet {
         marked = new boolean[graph.V()]; // reset
         List<Integer> postOrder = new ArrayList<>();
         // run topological sort on an arbitrary vertex
-        topologicalSort(0, marked, postOrder);
+        topologicalSort(graph, 0, marked, postOrder);
         // System.out.println("postOrder = " + postOrder);
         int root = postOrder.get(0); // if there is one root, then this must be the root
         // System.out.println("root = " + root);
@@ -150,12 +150,12 @@ public class WordNet {
         return synIdToString.get(ancestor);
     }
 
-    private boolean isCyclic(int v, boolean[] marked, Set<Integer> stack) {
+    private boolean isCyclic(Digraph graph, int v, boolean[] marked, Set<Integer> stack) {
         marked[v] = true;
         stack.add(v);
         for (int w : graph.adj(v)) {
             if (!marked[w]) {
-                if (isCyclic(w, marked, stack)) {
+                if (isCyclic(graph, w, marked, stack)) {
                     return true;
                 }
             }
@@ -167,12 +167,12 @@ public class WordNet {
         return false;
     }
 
-    private void topologicalSort(int v, boolean[] marked, List<Integer> postOrder) {
+    private void topologicalSort(Digraph graph, int v, boolean[] marked, List<Integer> postOrder) {
         marked[v] = true;
         // visit all children first
         for (int w : graph.adj(v)) {
             if (!marked[w]) {
-                topologicalSort(w, marked, postOrder);
+                topologicalSort(graph, w, marked, postOrder);
             }
         }
         postOrder.add(v); // process node last
