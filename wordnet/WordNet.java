@@ -6,7 +6,6 @@
 
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.Queue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +21,8 @@ public class WordNet {
     private final TreeMap<String, Integer> bst; // key: word | value: synset id
 
     private final Map<Integer, String> synIdToString;
+
+    private final SAP sap;
 
     /**
      * constructor takes the name of the two input files
@@ -75,16 +76,18 @@ public class WordNet {
         List<Integer> postOrder = new ArrayList<>();
         // run topological sort on an arbitrary vertex
         topologicalSort(10, marked, postOrder);
-        System.out.println("postOrder = " + postOrder);
+        // System.out.println("postOrder = " + postOrder);
         int root = postOrder.get(0); // if there is one root, then this must be the root
-        System.out.println("root = " + root);
+        // System.out.println("root = " + root);
         // run dfs on root
         List<Integer> dfsPathFromRoot = new ArrayList<>();
         marked = new boolean[graph.V()]; // reset
         dfs(graph.reverse(), root, marked, dfsPathFromRoot);
-        System.out.println("dfsPathFromRoot = " + dfsPathFromRoot);
+        // System.out.println("dfsPathFromRoot = " + dfsPathFromRoot);
         if (dfsPathFromRoot.size() != graph.V())
             throw new IllegalArgumentException("Graph is not rooted");
+
+        sap = new SAP(graph);
     }
 
     // returns all WordNet nouns
@@ -98,71 +101,45 @@ public class WordNet {
         return false;
     }
 
-    // distance between nounA and nounB (defined below)
+    /**
+     * distance between nounA and nounB
+     * Get a list of all synsets in which nounA appears [listA]
+     * Get a list of all synsets in which nounB appears [listB]
+     * then distance(nounA, nounB) = sap.distance(listA, listB)
+     *
+     * @param nounA
+     * @param nounB
+     * @return
+     */
     public int distance(String nounA, String nounB) {
-        int synIdA = bst.get(nounA);
-        int synIdB = bst.get(nounB);
-        int lcId = bfsCommonAncestor(synIdA, synIdB);
-
-        return bfsDistance(synIdA, lcId) + bfsDistance(synIdB, lcId);
+        List<Integer> synsetIdA = new ArrayList<>();
+        List<Integer> synsetIdB = new ArrayList<>();
+        for (Map.Entry<Integer, String> s : synIdToString.entrySet()) {
+            Integer id = s.getKey();
+            String synset = s.getValue();
+            if (synset.contains(nounA)) synsetIdA.add(id);
+            if (synset.contains(nounB)) synsetIdB.add(id);
+        }
+        int length = sap.length(synsetIdA, synsetIdB);
+        if (length == -1)
+            throw new IllegalArgumentException("one of the nouns is not in the lexicon");
+        return length;
     }
 
-    // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
-    // in a shortest ancestral path (defined below)
     public String sap(String nounA, String nounB) {
-        int synIdA = bst.get(nounA);
-        int synIdB = bst.get(nounB);
-        int lcId = bfsCommonAncestor(synIdA, synIdB);
-
-        return synIdToString.get(lcId);
-    }
-
-    // find shortest common ancestor using bfs
-    private int bfsCommonAncestor(int idA, int idB) {
-        boolean[] marked = new boolean[graph.V()];
-        Queue<Integer> queue = new Queue<>();
-        queue.enqueue(idA);
-        queue.enqueue(idB);
-        marked[idA] = true;
-        marked[idB] = true;
-        while (!queue.isEmpty()) {
-            int v = queue.dequeue();
-            for (int w : graph.adj(v)) {
-                if (!marked[w]) {
-                    marked[w] = true;
-                    queue.enqueue(w);
-                }
-                else {
-                    // common ancestor found
-                    return w;
-                }
-            }
+        List<Integer> synsetIdA = new ArrayList<>();
+        List<Integer> synsetIdB = new ArrayList<>();
+        for (Map.Entry<Integer, String> s : synIdToString.entrySet()) {
+            Integer id = s.getKey();
+            String synset = s.getValue();
+            if (synset.contains(nounA)) synsetIdA.add(id);
+            if (synset.contains(nounB)) synsetIdB.add(id);
         }
-        throw new IllegalArgumentException("something wrong with inputs to bfs");
-    }
 
-    private int bfsDistance(int from, int to) {
-        boolean[] marked = new boolean[graph.V()];
-        int[] dist = new int[graph.V()];
-        int[] edgeTo = new int[graph.V()];
-        Queue<Integer> queue = new Queue<>();
-        queue.enqueue(from);
-        dist[from] = 0;
-        edgeTo[from] = -1;
-        marked[from] = true;
-        while (!queue.isEmpty()) {
-            int v = queue.dequeue();
-            for (int w : graph.adj(v)) {
-                if (!marked[w]) {
-                    marked[w] = true;
-                    queue.enqueue(w);
-                    dist[w] = dist[v] + 1;
-                    edgeTo[w] = v;
-                    if (w == to) return dist[w];
-                }
-            }
-        }
-        throw new IllegalArgumentException("something wrong with inputs to bfs");
+        int ancestor = sap.ancestor(synsetIdA, synsetIdB);
+        if (ancestor == -1)
+            throw new IllegalArgumentException("one of the nouns is not in the lexicon");
+        return synIdToString.get(ancestor);
     }
 
     private boolean isCyclic(int v, boolean[] marked, Set<Integer> stack) {
