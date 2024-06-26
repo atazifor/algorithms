@@ -54,93 +54,78 @@ public class SAP {
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
         validateParams(v, w);
-        return bfsAncestor(v, w).distance;
+        return minAncestorDistance(v, w);
     }
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         validateParams(v, w);
-        return bfsAncestor(v, w).ancestor;
+        return minAncestorIndex(v, w);
     }
 
-    private class Result {
-        int ancestor;
-        int distance;
-
-        public Result() {
-            ancestor = -1;
-            distance = -1;
+    private int[] bfsDistance(Iterable<Integer> s) {
+        int n = G.V();
+        int[] distance = new int[n];
+        for (int i = 0; i < n; i++) {
+            distance[i] = -1; // not reachable initially
         }
-    }
-
-    private Result bfsAncestor(Iterable<Integer> v, Iterable<Integer> w) {
-        Result result = new Result();
-
-        Queue<Integer> queueA = new Queue<>();
-        Queue<Integer> queueB = new Queue<>();
-
-        boolean[] markedA = new boolean[G.V()];
-        boolean[] markedB = new boolean[G.V()];
-
-        int[] distanceA = new int[G.V()];
-        int[] distanceB = new int[G.V()];
-
-        for (Integer x : v) {
-            queueA.enqueue(x);
-            markedA[x] = true;
-            distanceA[x] = 0;
+        Queue<Integer> queue = new Queue<>();
+        boolean[] marked = new boolean[n];
+        for (int x : s) {
+            queue.enqueue(x);
+            marked[x] = true;
+            distance[x] = 0;
         }
-
-        for (Integer x : w) {
-            queueB.enqueue(x);
-            markedB[x] = true;
-            distanceB[x] = 0;
-        }
-
-        while (!queueA.isEmpty() || !queueB.isEmpty()) {
-            if (!queueA.isEmpty()) {
-                int xA = queueA.dequeue();
-                for (int yA : G.adj(xA)) {
-                    if (markedB[yA]) {
-                        result.ancestor = yA;
-                        result.distance = distanceA[xA] + 1 + distanceB[yA];
-                        return result;
-                    }
-                    else if (!markedA[yA]) {
-                        queueA.enqueue(yA);
-                        markedA[yA] = true;
-                        distanceA[yA] = distanceA[xA] + 1;
-                    }
-                }
-            }
-            if (!queueB.isEmpty()) {
-                int xB = queueB.dequeue();
-                for (int yB : G.adj(xB)) {
-                    if (markedA[yB]) {
-                        result.ancestor = yB;
-                        result.distance = distanceB[xB] + 1 + distanceA[yB];
-                        return result;
-                    }
-                    else if (!markedB[yB]) {
-                        queueB.enqueue(yB);
-                        markedB[yB] = true;
-                        distanceB[yB] = distanceB[xB] + 1;
-                    }
+        while (!queue.isEmpty()) {
+            int v = queue.dequeue();
+            for (int w : G.adj(v)) {
+                if (!marked[w]) {
+                    queue.enqueue(w);
+                    marked[w] = true;
+                    distance[w] = distance[v] + 1;
                 }
             }
         }
-        return result;
+        return distance;
+    }
+
+    private int minAncestorIndex(Iterable<Integer> v, Iterable<Integer> w) {
+        int minDistance = Integer.MAX_VALUE; // or could use G.E()
+        int minAncestor = -1;
+        int n = G.V();
+        int[] distanceA = bfsDistance(v);
+        int[] distanceB = bfsDistance(w);
+        for (int i = 0; i < n; i++) {
+            if (distanceA[i] != -1
+                    && distanceB[i] != -1) { // this implies vertex i is reachable from both v and w
+                int distance = distanceA[i] + distanceB[i];
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minAncestor = i;
+                }
+            }
+        }
+        return minAncestor;
+    }
+
+    private int minAncestorDistance(Iterable<Integer> v, Iterable<Integer> w) {
+        int minAncestorIndex = minAncestorIndex(v, w);
+        if (minAncestorIndex == -1) return -1;
+
+        int[] distanceA = bfsDistance(v);
+        int[] distanceB = bfsDistance(w);
+        return distanceA[minAncestorIndex] + distanceB[minAncestorIndex];
     }
 
     private void validateParams(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null) throw new IllegalArgumentException("args can't be null");
         for (Integer x : v) {
-            if (v == null) throw new IllegalArgumentException("an iterable can't have a null item");
+            if (x == null) throw new IllegalArgumentException("an iterable can't have a null item");
             if (x < 0 || x >= G.V())
                 throw new IllegalArgumentException("an iterable has an out of bound item");
         }
         for (Integer x : w) {
-            if (v == null) throw new IllegalArgumentException("an iterable can't have a null item");
+            if (x == null) throw new IllegalArgumentException("an iterable can't have a null item");
             if (x < 0 || x >= G.V())
                 throw new IllegalArgumentException("an iterable has an out of bound item");
         }

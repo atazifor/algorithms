@@ -99,6 +99,7 @@ public class WordNet {
 
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
+        if (word == null) throw new IllegalArgumentException("can't have a null argument");
         if (bst.containsKey(word)) return true;
         return false;
     }
@@ -114,6 +115,8 @@ public class WordNet {
      * @return
      */
     public int distance(String nounA, String nounB) {
+        if (nounA == null || nounB == null)
+            throw new IllegalArgumentException("can't have null arguments");
         if (nounA.equals(nounB)) return 0;
         Set<Integer> synsetIdA = new HashSet<>();
         Set<Integer> synsetIdB = new HashSet<>();
@@ -130,6 +133,8 @@ public class WordNet {
     }
 
     public String sap(String nounA, String nounB) {
+        if (nounA == null || nounB == null)
+            throw new IllegalArgumentException("can't have null arguments");
         if (nounA.equals(nounB)) return nounA;
         Set<Integer> synsetIdA = new HashSet<>();
         Set<Integer> synsetIdB = new HashSet<>();
