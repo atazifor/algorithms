@@ -6,6 +6,7 @@
 
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +52,8 @@ public class WordNet {
             synIdToString.put(Integer.parseInt(split[0]),
                               split[1]); // synset (second field of synsets.txt)
         }
-
+        // line count
+        // System.out.println("lineCount = " + lineCount);
         graph = new Digraph(lineCount);
         In edges = new In(hypernyms);
         while (!edges.isEmpty()) {
@@ -75,7 +77,7 @@ public class WordNet {
         marked = new boolean[graph.V()]; // reset
         List<Integer> postOrder = new ArrayList<>();
         // run topological sort on an arbitrary vertex
-        topologicalSort(10, marked, postOrder);
+        topologicalSort(0, marked, postOrder);
         // System.out.println("postOrder = " + postOrder);
         int root = postOrder.get(0); // if there is one root, then this must be the root
         // System.out.println("root = " + root);
@@ -112,13 +114,14 @@ public class WordNet {
      * @return
      */
     public int distance(String nounA, String nounB) {
-        List<Integer> synsetIdA = new ArrayList<>();
-        List<Integer> synsetIdB = new ArrayList<>();
+        if (nounA.equals(nounB)) return 0;
+        Set<Integer> synsetIdA = new HashSet<>();
+        Set<Integer> synsetIdB = new HashSet<>();
         for (Map.Entry<Integer, String> s : synIdToString.entrySet()) {
             Integer id = s.getKey();
             String synset = s.getValue();
             if (synset.contains(nounA)) synsetIdA.add(id);
-            if (synset.contains(nounB)) synsetIdB.add(id);
+            else if (synset.contains(nounB)) synsetIdB.add(id);
         }
         int length = sap.length(synsetIdA, synsetIdB);
         if (length == -1)
@@ -127,15 +130,15 @@ public class WordNet {
     }
 
     public String sap(String nounA, String nounB) {
-        List<Integer> synsetIdA = new ArrayList<>();
-        List<Integer> synsetIdB = new ArrayList<>();
+        if (nounA.equals(nounB)) return nounA;
+        Set<Integer> synsetIdA = new HashSet<>();
+        Set<Integer> synsetIdB = new HashSet<>();
         for (Map.Entry<Integer, String> s : synIdToString.entrySet()) {
             Integer id = s.getKey();
             String synset = s.getValue();
             if (synset.contains(nounA)) synsetIdA.add(id);
             if (synset.contains(nounB)) synsetIdB.add(id);
         }
-
         int ancestor = sap.ancestor(synsetIdA, synsetIdB);
         if (ancestor == -1)
             throw new IllegalArgumentException("one of the nouns is not in the lexicon");
@@ -183,10 +186,28 @@ public class WordNet {
     // some unit testing
     public static void main(String[] args) {
         WordNet wordNet = new WordNet("synsets12.txt", "hypernyms12.txt");
-        String sap = wordNet.sap("d", "k");
-        System.out.println("sap = " + sap);
-        int distance = wordNet.distance("d", "k");
-        System.out.println("distance = " + distance);
+        String nounA = "d";
+        String nounB = "k";
+        String sap = wordNet.sap(nounA, nounB);
+        int distance = wordNet.distance(nounA, nounB);
+        StdOut.printf("[%s, %s] | sap = %s | distance = %d\n", nounA, nounB, sap, distance);
 
+        nounA = "b";
+        nounB = "c";
+        sap = wordNet.sap(nounA, nounB);
+        distance = wordNet.distance(nounA, nounB);
+        StdOut.printf("[%s, %s] | sap = %s | distance = %d\n", nounA, nounB, sap, distance);
+
+        nounA = "g";
+        nounB = "g";
+        sap = wordNet.sap(nounA, nounB);
+        distance = wordNet.distance(nounA, nounB);
+        StdOut.printf("[%s, %s] | sap = %s | distance = %d\n", nounA, nounB, sap, distance);
+
+        nounA = "a";
+        nounB = "b";
+        sap = wordNet.sap(nounA, nounB);
+        distance = wordNet.distance(nounA, nounB);
+        StdOut.printf("[%s, %s] | sap = %s | distance = %d\n", nounA, nounB, sap, distance);
     }
 }
