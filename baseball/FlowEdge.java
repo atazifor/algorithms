@@ -10,10 +10,10 @@ public class FlowEdge {
     private final double capacity;
     private double flow;
 
-    public FlowEdge(int v, int w, double capaciy) {
+    public FlowEdge(int v, int w, double capacity) {
         this.v = v;
         this.w = w;
-        this.capacity = capaciy;
+        this.capacity = capacity;
     }
 
     public int from() {
@@ -27,10 +27,10 @@ public class FlowEdge {
     public int other(int vertex) {
         if (vertex == v) return w;
         else if (vertex == w) return v;
-        throw new IllegalArgumentException("invalid vertex");
+        else throw new IllegalArgumentException("invalid vertex");
     }
 
-    private double capacity() {
+    public double capacity() {
         return capacity;
     }
 
@@ -43,13 +43,13 @@ public class FlowEdge {
             return flow; // backward edge
         else if (vertex == w)
             return capacity - flow; // forward edge
-        throw new IllegalArgumentException("Not a valid vertex");
+        else throw new IllegalArgumentException("Not a valid vertex");
     }
 
     public void addResidualFlowTo(int vertex, double delta) {
         if (vertex == v) flow -= delta; // backward edge
         else if (vertex == w) flow += delta; // forward edge
-        throw new IllegalArgumentException("Not a valid vertext");//
+        else throw new IllegalArgumentException("Not a valid vertex");//
     }
 
 
