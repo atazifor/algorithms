@@ -37,7 +37,7 @@ public class BaseballElimination {
 
         int i = 0;
         while (!in.isEmpty()) {
-            String line = in.readLine();
+            String line = in.readLine().trim();
             String[] parts = line.split(" +");
             wins[i] = Integer.parseInt(parts[1]);
             loss[i] = Integer.parseInt(parts[2]);
@@ -59,6 +59,7 @@ public class BaseballElimination {
      * @see BaseballElimination#certificateOfElimination(String)
      */
     public boolean isEliminated(String team) {
+        if (!teamMap.containsKey(team)) throw new IllegalArgumentException("Invalid team used");
         if (certificateOfElimination(team) == null) return false;
         return true;
     }
@@ -74,6 +75,7 @@ public class BaseballElimination {
      * @return subset R of teams that eliminates given team; null if not eliminated
      */
     public Iterable<String> certificateOfElimination(String team) {
+        if (!teamMap.containsKey(team)) throw new IllegalArgumentException("Invalid team used");
         int n = numberOfTeams();
         int x = teamMap.get(team);
         List<String> cert = new ArrayList<>();
@@ -109,8 +111,8 @@ public class BaseballElimination {
                 int g = gamesAgaints[j][k];
                 int vertex = ++i;
                 G.addEdge(new FlowEdge(s, vertex, g));
-                G.addEdge(new FlowEdge(vertex, j, Double.MAX_VALUE));
-                G.addEdge(new FlowEdge(vertex, k, Double.MAX_VALUE));
+                G.addEdge(new FlowEdge(vertex, j, Double.POSITIVE_INFINITY));
+                G.addEdge(new FlowEdge(vertex, k, Double.POSITIVE_INFINITY));
             }
         }
         FordFulkerson ff = new FordFulkerson(G, s, t);
@@ -137,59 +139,30 @@ public class BaseballElimination {
     }
 
     public int wins(String team) {
+        if (!teamMap.containsKey(team)) throw new IllegalArgumentException("Invalid team used");
         return wins[teamMap.get(team)];
     }
 
     public int losses(String team) {
+        if (!teamMap.containsKey(team)) throw new IllegalArgumentException("Invalid team used");
         return loss[teamMap.get(team)];
     }
 
     public int remaining(String team) {
+        if (!teamMap.containsKey(team)) throw new IllegalArgumentException("Invalid team used");
         return r[teamMap.get(team)];
     }
 
     public int against(String team1, String team2) {
+        if (!teamMap.containsKey(team1) || !teamMap.containsKey(team2))
+            throw new IllegalArgumentException("Invalid team used");
         int i = teamMap.get(team1);
         int j = teamMap.get(team2);
         return gamesAgaints[i][j];
     }
 
     public static void main(String[] args) {
-        BaseballElimination division = new BaseballElimination("teams4.txt");
-        System.out.println("division.wins(\"Atlanta\") = " + division.wins("Atlanta"));
-        System.out.println("division.loss(\"Atlanta\") = " + division.losses("Atlanta"));
-        System.out.println("division.remaining(\"Atlanta\") = " + division.remaining("Atlanta"));
-        System.out.println(
-                "division.against(\"Atlanta, Philadelphia\") = " + division.against("Atlanta",
-                                                                                    "Philadelphia"));
-
-        System.out.println("division.wins(\"New_York\") = " + division.wins("New_York"));
-        System.out.println("division.loss(\"New_York\") = " + division.losses("New_York"));
-        System.out.println("division.remaining(\"New_York\") = " + division.remaining("New_York"));
-        System.out.println(
-                "division.against(\"New_York, Philadelphia\") = " + division.against("New_York",
-                                                                                     "Philadelphia"));
-
-        Iterable<String> certificateOfElimination = division.certificateOfElimination(
-                "New_York");
-        if (certificateOfElimination != null) {
-            for (String s : certificateOfElimination)
-                System.out.println(" " + s);
-        }
-        for (String team : division.teams()) {
-            StdOut.println("==" + team + "==");
-            if (division.isEliminated(team)) {
-                StdOut.print(team + " is eliminated by the subset R = { ");
-                for (String t : division.certificateOfElimination(team)) {
-                    StdOut.print(t + " ");
-                }
-                StdOut.println("}");
-            }
-            else {
-                StdOut.println(team + " is not eliminated");
-            }
-        }
-        /*BaseballElimination division = new BaseballElimination(args[0]);
+        BaseballElimination division = new BaseballElimination(args[0]);
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
@@ -201,6 +174,6 @@ public class BaseballElimination {
             else {
                 StdOut.println(team + " is not eliminated");
             }
-        }*/
+        }
     }
 }
