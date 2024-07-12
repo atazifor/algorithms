@@ -17,11 +17,39 @@ public class StringFunctions {
         return suffixes;
     }
 
+    public static void dnf(int[] a) {
+        int lt = 0;
+        int gt = a.length-1;
+        int j = 0;
+        while(j <= gt) {
+            if(a[j] < 1) exch(a, j++, lt++);
+            else if(a[j] == 1) j++;
+            else //a[j] > 1
+                exch(a, j, gt--);
+        }
+    }
+
+    public static void exch(int[] a, int i, int j) {
+        int swap = a[i];
+        a[i] = a[j];
+        a[j] = swap;
+    }
+
     public static void main(String[] args) {
         System.out.println("lcp(\"prenuptial\", \"prenatal\") = " + lcp("prenuptial", "prenatal"));
         System.out.println("===\nSuffixes of prenuptial\n===");
         for(String s: suffixes("prenuptial")) {
             System.out.println(s);
         }
+
+        int[] a = {2,2,2,1,0,0,1,1,0,0,2,0};
+        dnf(a);
+        System.out.println("===\nDutch National Flag\n===");
+        for(int i: a) {
+            System.out.print(" " + i);
+        }
+        System.out.println();
+
+
     }
 }
