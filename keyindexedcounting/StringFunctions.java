@@ -29,8 +29,41 @@ public class StringFunctions {
         }
     }
 
+    public static void threeWayStringSort(String[] a) {
+        threeWayStringSort(a, 0, a.length-1, 0);
+    }
+
+    public static void threeWayStringSort(String[] a, int lo, int hi, int d) {
+        if(hi <= lo) return;
+        int lt = lo;
+        int gt = hi;
+        int j = lo;
+        int v =  charAt(a[lo], d);
+        while(j <= gt) { //sort of dth character
+            int t = charAt(a[j], d);
+            if(t < v) exch(a, lt++, j++);
+            else if(t > v) exch(a, j, gt--);
+            else j++;
+        }
+        threeWayStringSort(a,  lo, lt-1, d);
+        if(v >= 0)//we still have more characters to process
+            threeWayStringSort(a, lt, gt, d+1);
+        threeWayStringSort(a, gt+1, hi, d);
+    }
+
+    public static int charAt(String s, int d) {
+        if(d < s.length()) return s.charAt(d);
+        else return -1;
+    }
+
     public static void exch(int[] a, int i, int j) {
         int swap = a[i];
+        a[i] = a[j];
+        a[j] = swap;
+    }
+
+    public static void exch(String[] a, int i, int j) {
+        String swap = a[i];
         a[i] = a[j];
         a[j] = swap;
     }
@@ -50,6 +83,10 @@ public class StringFunctions {
         }
         System.out.println();
 
-
+        String[] s = {"ced", "add", "jef", "feg"};
+        threeWayStringSort(s);
+        for(String i: s)
+            System.out.print(" " + i);
+        System.out.println();
     }
 }
