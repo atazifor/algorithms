@@ -6,7 +6,7 @@ import java.util.Arrays;
  * i and j such that ai + aj = T
  * Your algorithm should run in linear time in the worst case.
  */
-public class Linear2WaySum {
+public class Linear2WaySumModuloRadixSort {
     //since linear time algorithm. we do index sort with radix 64
     //then binary sear T-aj
 
